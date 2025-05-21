@@ -22,7 +22,7 @@ app.post("/template", async (req, res) => {
     messages: [
       {
         role: "user",
-        content: `Retrun either node or react based on what do you think this project should be , only return a single word either 'node or 'react' , Do not return anything extra`,
+        content: `Retrun either node or react based on what do you think this project should be . only return a single word either 'node or 'react' . Do not return anything else`,
       },
       {
         role: "user",
@@ -34,15 +34,17 @@ app.post("/template", async (req, res) => {
   });
 
   const answer = response.choices[0].message.content;
+  console.log(answer);
+  
 
-  if (answer == "react") {
+  if (answer == "react" || answer== "React") {
     res.json({
       prompt: [BASE_PROMPT, ` Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${reactBasePrompt}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n - package-lock.json\n`],
       uiPrompt : [reactBasePrompt]
     });
     return;
   }
-  if (answer == "node") {
+  if (answer == "node" || answer == "Node") {
     res.json({
       prompt: [` Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${nodeBasePrompt}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n - package-lock.json\n `],
       uiPrompt : [nodeBasePrompt]
@@ -52,6 +54,28 @@ app.post("/template", async (req, res) => {
   res.status(403).json({ message: "You cant access this" });
   return;
 });
+
+app.post("/chat" ,async(req,res)=>{
+  const messages = req.body.messages ;
+  const response = await client.chatCompletionStream({
+    model: "meta-llama/Llama-3.1-8B-Instruct",
+    messages: messages,
+    max_tokens: 8000,
+    stream:true ,
+    system : getSystemPrompt()
+  });
+  for await (const chunk of response) {
+      const delta = chunk.choices?.[0]?.delta?.content;
+      if (delta) {
+        process.stdout.write(delta);
+      }
+    }
+
+
+  res.json({})
+
+
+})
 
 app.listen(3000);
 
