@@ -10,7 +10,7 @@ const Footer: React.FC = () => {
           <div className="md:col-span-1">
             <Link to="/" className="flex items-center gap-2 text-white mb-4">
               <Code size={24} className="text-purple-500" />
-              <span className="font-bold text-xl">WebCraft</span>
+              <span className="font-bold text-xl">Weblium</span>
             </Link>
             <p className="text-slate-400 mb-4">
               Transform your ideas into beautiful websites with just a prompt.
@@ -79,7 +79,7 @@ const Footer: React.FC = () => {
         </div>
         
         <div className="mt-12 pt-6 border-t border-slate-800 text-center text-slate-500">
-          <p>&copy; {new Date().getFullYear()} WebCraft. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Weblium. All rights reserved.</p>
         </div>
       </div>
     </footer>

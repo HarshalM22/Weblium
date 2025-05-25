@@ -8,7 +8,7 @@ const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 text-white">
           <Code size={24} className="text-purple-500" />
-          <span className="font-bold text-xl">WebCraft</span>
+          <span className="font-bold text-xl">Weblium</span>
         </Link>
         
         <nav className="hidden md:flex items-center gap-6">
