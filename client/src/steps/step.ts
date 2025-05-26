@@ -30,7 +30,7 @@ import { FileItem, Step} from "../contexts/BuildContext";
  * 
  * The input can have strings in the middle they need to be ignored
  */
-export function parseXml(response: string): Step[] | FileItem[] {
+export function parseXml(response: string): Step[]  {
     // Extract the XML content between <boltArtifact> tags
     const xmlMatch = response.match(/<boltArtifact[^>]*>([\s\S]*?)<\/boltArtifact>/);
     
@@ -89,15 +89,48 @@ export function parseXml(response: string): Step[] | FileItem[] {
   }
 
 
-export function parseBoltArtifactToFiles(artifact: any) {
-  const files: Record<string, string> = {};
+import { FileItem } from '../context/BuildContext';
 
-  if (!artifact || !Array.isArray(artifact.boltAction)) return files;
-
-  for (const action of artifact.boltAction) {
-    if (action.type === 'file' && action.filePath) {
-      files[action.filePath] = action.content || '';
+// Utility: Ensure folder path exists in the tree and return the target folder
+function ensurePath(tree: FileItem[], pathParts: string[]): FileItem[] {
+  let currentLevel = tree;
+  for (const part of pathParts) {
+    let existing = currentLevel.find(item => item.name === part && item.type === 'folder');
+    if (!existing) {
+      existing = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: part,
+        type: 'folder',
+        children: []
+      };
+      currentLevel.push(existing);
     }
+    currentLevel = existing.children!;
+  }
+  return currentLevel;
+}
+
+export function parseBoltArtifactXml(xml: string): FileItem[] {
+  const fileRegex = /<boltAction type="file" filePath="([^"]+)">([\s\S]*?)<\/boltAction>/g;
+  const files: FileItem[] = [];
+
+  let match;
+  while ((match = fileRegex.exec(xml)) !== null) {
+    const fullPath = match[1].trim();
+    const content = match[2].trim();
+
+    const pathParts = fullPath.split('/');
+    const fileName = pathParts.pop()!;
+    const extension = fileName.split('.').pop();
+
+    const folder = ensurePath(files, pathParts);
+    folder.push({
+      id: Math.random().toString(36).substr(2, 9),
+      name: fileName,
+      type: 'file',
+      extension,
+      content,
+    });
   }
 
   return files;
