@@ -4,7 +4,7 @@ import { InferenceClient } from "@huggingface/inference";
 import { BASE_PROMPT, getSystemPrompt } from "./prompt/prompt";
 import { reactBasePrompt } from "./defaults/react";
 import { nodeBasePrompt } from "./defaults/node";
-import cors from 'cors'
+import cors from "cors";
 
 if (!process.env.HF_TOKEN) {
   console.error("HF_TOKEN not found in environment variables.");
@@ -13,7 +13,7 @@ if (!process.env.HF_TOKEN) {
 
 const client = new InferenceClient(process.env.HF_TOKEN);
 const app = express();
-app.use(cors())
+app.use(cors());
 app.use(express.json());
 
 app.post("/template", async (req, res) => {
@@ -24,7 +24,8 @@ app.post("/template", async (req, res) => {
     messages: [
       {
         role: "system",
-        content: "Retrun either node or react based on what do you think this project should be . only return a single word either 'node or 'react' . Do not return anything else",
+        content:
+          "Retrun either node or react based on what do you think this project should be . only return a single word either 'node or 'react' . Do not return anything else",
       },
       {
         role: "user",
@@ -37,19 +38,23 @@ app.post("/template", async (req, res) => {
 
   const answer = response.choices[0].message.content;
   console.log(answer);
-  
 
-  if (answer == "react" || answer== "React") {
+  if (answer == "react" || answer == "React") {
     res.json({
-      basePrompt: [BASE_PROMPT, ` Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${reactBasePrompt}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n - package-lock.json\n`],
-      uiPrompt : [reactBasePrompt]
+      basePrompt: [
+        BASE_PROMPT,
+        ` Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${reactBasePrompt}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n - package-lock.json\n`,
+      ],
+      uiPrompt: [reactBasePrompt],
     });
     return;
   }
   if (answer == "node" || answer == "Node") {
     res.json({
-      basePrompt: [` Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${nodeBasePrompt}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n - package-lock.json\n `],
-      uiPrompt : [nodeBasePrompt]
+      basePrompt: [
+        ` Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${nodeBasePrompt}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n - package-lock.json\n `,
+      ],
+      uiPrompt: [nodeBasePrompt],
     });
     return;
   }
@@ -57,68 +62,28 @@ app.post("/template", async (req, res) => {
   return;
 });
 
-app.post("/chat" ,async(req,res)=>{
-  const messages = req.body.messages ;
+app.post("/chat", async (req, res) => {
+  const messages = req.body.messages;
   const response = await client.chatCompletionStream({
     model: "meta-llama/Llama-3.1-8B-Instruct",
-    messages: [{role :"system",content:getSystemPrompt()},...messages],
+    messages: [{ role: "system", content: getSystemPrompt() }, ...messages],
     max_tokens: 8000,
-    stream:true 
+    stream: true,
   });
-  let responseText ="";
+  let responseText = "";
   for await (const chunk of response) {
-      const delta = chunk.choices?.[0]?.delta?.content;
-      if (delta) {
-        process.stdout.write(delta);
-        responseText += delta ;
-      }
+    const delta = chunk.choices?.[0]?.delta?.content;
+    if (delta) {
+      process.stdout.write(delta);
+      responseText += delta;
     }
+  }
 
+  
 
   res.json({
-    response:responseText 
-  })
-
-
-})
+    response: responseText ,
+  });
+});
 
 app.listen(3000);
-
-// async function main() {
-//   try {
-//     const out = await client.chatCompletionStream({
-//       model: "meta-llama/Llama-3.1-8B-Instruct",
-//       messages: [
-//         {
-//           role: "user",
-//           content: "For all designs I ask you to make, have them be beautiful, not cookie cutter. Make webpages that are fully featured and worthy for production.\n\nBy default, this template supports JSX syntax with Tailwind CSS classes, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc unless absolutely necessary or I request them.\n\nUse icons from lucide-react for logos.\n\nUse stock photos from unsplash where appropriate, only valid URLs you know exist. Do not download the images, only link to them in image tags.\n\n",
-//         },
-//         {
-//           role: "user",
-//           content: `Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${reactBasePrompt}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n  - package-lock.json\n`,
-//         },
-//         {
-//           role: "user",
-//           content: "Here"
-//         }
-
-//       ],
-//       system: getSystemPrompt(),
-//       max_tokens: 8000,
-//       stream: true,
-//     });
-//     console.log("💬 Assistant:");
-
-//     for await (const chunk of out) {
-//       const delta = chunk.choices?.[0]?.delta?.content;
-//       if (delta) {
-//         process.stdout.write(delta);
-//       }
-//     }
-//     console.log("\n✅ Done.");
-//   } catch (error) {
-//     console.error("❌ Error streaming response:", error);
-//   }
-// }
-
-// main();
