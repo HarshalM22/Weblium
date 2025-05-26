@@ -16,10 +16,10 @@ const Builder: React.FC = () => {
 
   // Start the build process when the component mounts
   useEffect(() => {
-    if (!isBuilding && prompt) {
+    if ( prompt) {
       startBuild();
     }
-  }, [isBuilding, prompt, startBuild]);
+  }, [prompt]);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => ({
@@ -247,12 +247,9 @@ interface CodePreviewProps {
 }
 
 const CodePreview: React.FC<CodePreviewProps> = ({ fileId, files }) => {
-  // Find the file in the file tree
   const findFile = (items: any[], id: string): any => {
     for (const item of items) {
-      if (item.id === id) {
-        return item;
-      }
+      if (item.id === id) return item;
       if (item.children) {
         const found = findFile(item.children, id);
         if (found) return found;
@@ -260,36 +257,17 @@ const CodePreview: React.FC<CodePreviewProps> = ({ fileId, files }) => {
     }
     return null;
   };
-  
+
   const file = findFile(files, fileId);
-  
+
   if (!file) {
     return <div className="p-4 text-slate-400">File not found</div>;
   }
-  
-  // Mock content based on file extension
-  let content = "";
-  
-  switch (file.extension) {
-    case 'tsx':
-    case 'jsx':
-      content = `import React from 'react';\n\nconst ${file.name.replace(/\.\w+$/, '')} = () => {\n  return (\n    <div>\n      <h1>${file.name.replace(/\.\w+$/, '')}</h1>\n      <p>This is a React component.</p>\n    </div>\n  );\n};\n\nexport default ${file.name.replace(/\.\w+$/, '')};`;
-      break;
-    case 'css':
-      content = `/* ${file.name} styles */\n\nbody {\n  margin: 0;\n  padding: 0;\n  font-family: sans-serif;\n}\n\n.container {\n  max-width: 1200px;\n  margin: 0 auto;\n}`;
-      break;
-    case 'html':
-      content = `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Document</title>\n</head>\n<body>\n  <div id="root"></div>\n</body>\n</html>`;
-      break;
-    case 'json':
-      content = `{\n  "name": "webcraft-project",\n  "version": "1.0.0",\n  "description": "A website created with WebCraft",\n  "main": "index.js",\n  "scripts": {\n    "start": "react-scripts start",\n    "build": "react-scripts build"\n  }\n}`;
-      break;
-    default:
-      content = `// ${file.name}\n// This is a generated file content`;
+
+  if (!file.content) {
+    return <div className="p-4 text-slate-400">No content available for this file.</div>;
   }
-  
-  file.content = content; // Store content in the file object
-  
+
   return (
     <div className="p-4">
       <div className="flex items-center justify-between mb-2">
@@ -303,11 +281,12 @@ const CodePreview: React.FC<CodePreviewProps> = ({ fileId, files }) => {
           </button>
         </div>
       </div>
-      <div className="bg-slate-900 rounded-md p-4 font-mono text-sm text-slate-300 overflow-x-auto">
+      <div className="bg-slate-900 rounded-md p-4 font-mono text-sm text-slate-300 overflow-x-auto whitespace-pre-wrap">
         <pre>{file.content}</pre>
       </div>
     </div>
   );
 };
+
 
 export default Builder;
