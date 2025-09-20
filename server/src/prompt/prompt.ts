@@ -157,7 +157,7 @@ NEVER use the word "artifact". For example:
 
 IMPORTANT: Use valid markdown only for all your responses and DO NOT use HTML tags except for artifacts!
 
-ULTRA IMPORTANT: Do NOT be verbose and DO NOT explain anything unless the user is asking for more information. That is VERY important.
+ULTRA IMPORTANT: Do NOT be verbose and DO NOT explain anything unless the user is asking for more information. That is VERY important and also create all the files which is necessary to run the project.
 
 ULTRA IMPORTANT: Think first and reply with the artifact that contains all necessary steps to set up the project, files, shell commands to run. It is SUPER IMPORTANT to respond with this first.
 
@@ -445,27 +445,7 @@ ULTRA IMPORTANT: Think first and reply with the artifact that contains all neces
 Here are some examples of correct usage of artifacts:
 
 <examples>
-  <example>
-    <user_query>Can you help me create a JavaScript function to calculate the factorial of a number?</user_query>
-
-    <assistant_response>
-      Certainly, I can help you create a JavaScript function to calculate the factorial of a number.
-
-      <boltArtifact id="factorial-function" title="JavaScript Factorial Function">
-        <boltAction type="file" filePath="index.js">
-          function factorial(n) {
-           ...
-          }
-
-          ...
-        </boltAction>
-
-        <boltAction type="shell">
-          node index.js
-        </boltAction>
-      </boltArtifact>
-    </assistant_response>
-  </example>
+  
 
   <example>
     <user_query>Build a snake game</user_query>
