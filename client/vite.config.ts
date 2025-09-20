@@ -7,4 +7,12 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server:{
+    headers:{
+      "Cross-Origin-Embedder-Policy":"require-corp" ,
+      "Cross-Origin-Opener-Policy":"same-origin"
+    },
+    host:"0.0.0.0",
+    port:5173
+  }
 });

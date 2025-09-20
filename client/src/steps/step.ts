@@ -89,7 +89,6 @@ export function parseXml(response: string): Step[]  {
   }
 
 
-import { FileItem } from '../context/BuildContext';
 
 // Utility: Ensure folder path exists in the tree and return the target folder
 function ensurePath(tree: FileItem[], pathParts: string[]): FileItem[] {
@@ -99,7 +98,7 @@ function ensurePath(tree: FileItem[], pathParts: string[]): FileItem[] {
     if (!existing) {
       existing = {
         id: Math.random().toString(36).substr(2, 9),
-        name: part,
+        name: part, 
         type: 'folder',
         children: []
       };
