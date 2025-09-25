@@ -2,7 +2,7 @@ require("dotenv").config();
 import express from "express";
 import cors from "cors";
 import OpenAI from "openai";
-import { BASE_PROMPT, getSystemPrompt } from "./prompt/prompt";
+import { BASE_PROMPT, getSystemPrompt, SystemPrompt } from "./prompt/prompt";
 import { reactBasePrompt } from "./defaults/react";
 import { nodeBasePrompt } from "./defaults/node";
 
@@ -78,12 +78,16 @@ app.post("/template", async (req, res) => {
 app.post("/chat", async (req, res) => {
   try {
     const messages = req.body.messages;
+    console.log("Received messages: " , messages);
+    console.log("**************************************************************************************")
+   
+
 
     // Collect streamed response into full text
     const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [{ role: "system", content: getSystemPrompt() }, ...messages],
-      max_tokens: 2000,
+      messages: [ {role: "system", content: SystemPrompt()} , ...messages],
+      max_tokens: 12000,
       stream: true,
     });
 
