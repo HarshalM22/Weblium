@@ -1,6 +1,4 @@
-// import { Step, StepType } from './types';
-
-import { FileItem, Step} from "../contexts/BuildContext";
+import { Step, StepType } from './types';
 
 /*
  * Parse input XML and convert it into steps.
@@ -30,7 +28,7 @@ import { FileItem, Step} from "../contexts/BuildContext";
  * 
  * The input can have strings in the middle they need to be ignored
  */
-export function parseXml(response: string): Step[]  {
+export function parseXml(response: string): Step[] {
     // Extract the XML content between <boltArtifact> tags
     const xmlMatch = response.match(/<boltArtifact[^>]*>([\s\S]*?)<\/boltArtifact>/);
     
@@ -51,7 +49,7 @@ export function parseXml(response: string): Step[]  {
       id: stepId++,
       title: artifactTitle,
       description: '',
-    //   type: StepType.creation,
+      type: StepType.CreateFolder,
       status: 'pending'
     });
   
@@ -68,9 +66,10 @@ export function parseXml(response: string): Step[]  {
           id: stepId++,
           title: `Create ${filePath || 'file'}`,
           description: '',
-        //   type: StepType.CreateFile,
+          type: StepType.CreateFile,
           status: 'pending',
-        //   code: content.trim(),
+          code: content.trim(),
+          path: filePath
         });
       } else if (type === 'shell') {
         // Shell command step
@@ -78,9 +77,9 @@ export function parseXml(response: string): Step[]  {
           id: stepId++,
           title: 'Run command',
           description: '',
-        //   type: StepType.RunScript,
+          type: StepType.RunScript,
           status: 'pending',
-        //   code: content.trim()
+          code: content.trim()
         });
       }
     }
@@ -88,49 +87,4 @@ export function parseXml(response: string): Step[]  {
     return steps;
   }
 
-
-
-// Utility: Ensure folder path exists in the tree and return the target folder
-function ensurePath(tree: FileItem[], pathParts: string[]): FileItem[] {
-  let currentLevel = tree;
-  for (const part of pathParts) {
-    let existing = currentLevel.find(item => item.name === part && item.type === 'folder');
-    if (!existing) {
-      existing = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: part, 
-        type: 'folder',
-        children: []
-      };
-      currentLevel.push(existing);
-    }
-    currentLevel = existing.children!;
-  }
-  return currentLevel;
-}
-
-export function parseBoltArtifactXml(xml: string): FileItem[] {
-  const fileRegex = /<boltAction type="file" filePath="([^"]+)">([\s\S]*?)<\/boltAction>/g;
-  const files: FileItem[] = [];
-
-  let match;
-  while ((match = fileRegex.exec(xml)) !== null) {
-    const fullPath = match[1].trim();
-    const content = match[2].trim();
-
-    const pathParts = fullPath.split('/');
-    const fileName = pathParts.pop()!;
-    const extension = fileName.split('.').pop();
-
-    const folder = ensurePath(files, pathParts);
-    folder.push({
-      id: Math.random().toString(36).substr(2, 9),
-      name: fileName,
-      type: 'file',
-      extension,
-      content,
-    });
-  }
-
-  return files;
-}
+  

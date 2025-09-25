@@ -1,313 +1,272 @@
 import React, { useEffect, useState } from 'react';
-import { useBuild } from '../contexts/BuildContext';
-import Header from '../components/layout/Header';
-import { ChevronRight, Code, Eye, File, Folder, FolderOpen, Monitor, Settings, Terminal } from 'lucide-react';
-// import { useWebContainer } from '../hooks/useWebContainer';
+import { useLocation } from 'react-router-dom';
+import { StepsList } from '../components/StepsList';
+import { FileExplorer } from '../components/FileExplorer';
+import { TabView } from '../components/TabView';
+import { CodeEditor } from '../components/CodeEditor';
+import { PreviewFrame } from '../components/PreviewFrame';
+import { Step, FileItem, StepType } from '../types';
+import axios from 'axios';
+import { BACKEND_URL } from '../config';
+import { parseXml } from '../steps';
+import { useWebContainer } from '../hooks/useWebContainer';
+import { FileNode } from '@webcontainer/api';
+import { Loader } from '../components/Loader';
 
-const Builder: React.FC = () => {
-  const { prompt, steps, currentStep, files, isBuilding, startBuild, previewURL } = useBuild();
-  const [selectedTab, setSelectedTab] = useState<'preview' | 'code'>('code');
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
-    '1': true, // src folder
-    '2': true, // components folder
-    '5': true, // pages folder
-  });
+const MOCK_FILE_CONTENT = `// This is a sample file content
+import React from 'react';
 
-
-
-  // Start the build process when the component mounts
-  useEffect(() => {
-    if (prompt) {
-      startBuild();
-    }
-  }, [prompt]);
-
-  const toggleFolder = (folderId: string) => {
-    setExpandedFolders(prev => ({
-      ...prev,
-      [folderId]: !prev[folderId]
-    }));
-  };
-
-  const handleFileSelect = (fileId: string) => {
-    setSelectedFile(fileId);
-    setSelectedTab('code');
-  };
-
-      console.log(`from builder: ${previewURL}`);
-
-
-
-
-  return (
-    <div className="min-h-screen flex flex-col bg-slate-900">
-      <Header />
-
-      <main className="flex-grow flex flex-col">
-        <div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 border-b border-slate-800">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <h1 className="text-2xl font-bold text-white">Building Your Website</h1>
-            <p className="text-slate-300 mt-2 max-w-3xl">
-              {prompt || "Transforming your prompt into a fully-featured website..."}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex-grow flex flex-col lg:flex-row">
-          {/* Build Steps Panel - Left Side */}
-          <div className="w-full lg:w-72 xl:w-80 bg-slate-900 border-r border-slate-800 p-4 overflow-y-auto">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
-              <Terminal size={18} className="mr-2 text-purple-500" />
-              Build Progress
-            </h2>
-
-            <div className="space-y-3">
-              {steps.map((step, index) => (
-                <div
-                  key={step.id}
-                  className={`p-3 rounded-lg transition-all duration-300 ${step.status === 'completed'
-                    ? 'bg-green-900/20 border border-green-800/50'
-                    : step.status === 'in-progress'
-                      ? 'bg-blue-900/20 border border-blue-800/50 animate-pulse'
-                      : 'bg-slate-800/50 border border-slate-700/50'
-                    }`}
-                >
-                  <div className="flex items-center">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-3 ${step.status === 'completed'
-                      ? 'bg-green-500 text-white'
-                      : step.status === 'in-progress'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-slate-700 text-slate-300'
-                      }`}>
-                      {step.status === 'completed'
-                        ? '✓'
-                        : step.status === 'in-progress'
-                          ? index + 1
-                          : index + 1
-                      }
-                    </div>
-                    <div className="flex-grow">
-                      <h3 className="font-medium text-white">{step.title}</h3>
-                      <p className="text-sm text-slate-400">{step.description}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {currentStep >= steps.length && (
-                <div className="p-3 rounded-lg bg-green-900/20 border border-green-800/50">
-                  <div className="flex items-center">
-                    <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center mr-3">
-                      ✓
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-white">Build Complete</h3>
-                      <p className="text-sm text-slate-400">Your website is ready!</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Main Content Area - Middle */}
-          <div className="flex-grow border-r border-slate-800 flex flex-col">
-            {/* Tab Navigation */}
-            <div className="bg-slate-800/50 border-b border-slate-700 flex items-center px-2">
-              <button
-                className={`px-4 py-3 border-b-2 font-medium ${selectedTab === 'code'
-                  ? 'border-purple-500 text-white'
-                  : 'border-transparent text-slate-400 hover:text-white'
-                  } transition-colors`}
-                onClick={() => setSelectedTab('code')}
-              >
-                <div className="flex items-center">
-                  <Code size={16} className="mr-2" />
-                  <span>Code</span>
-                </div>
-              </button>
-              <button
-                className={`px-4 py-3 border-b-2 font-medium ${selectedTab === 'preview'
-                  ? 'border-purple-500 text-white'
-                  : 'border-transparent text-slate-400 hover:text-white'
-                  } transition-colors`}
-                onClick={() => setSelectedTab('preview')}
-              >
-                <div className="flex items-center">
-                  <Eye size={16} className="mr-2" />
-                  <span>Preview</span>
-                </div>
-              </button>
-            </div>
-
-            {/* Content Area */}
-            <div className="flex-grow overflow-auto p-4">
-              {selectedTab === "preview" ? (
-                previewURL ? (
-                  // ✅ Live Preview
-                  <iframe
-                    src={previewURL}
-                    title="Live Preview"
-                    className="w-full h-full rounded-lg border border-slate-700"
-                  />
-                ) : (
-                  // ✅ Placeholder (no URL yet)
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center p-8 bg-slate-800 rounded-lg border border-slate-700 max-w-md">
-                      <Monitor size={48} className="mx-auto text-slate-400 mb-4" />
-                      <h3 className="text-xl font-semibold text-white mb-2">
-                        Website Preview
-                      </h3>
-                      <p className="text-slate-300 mb-4">
-                        Preview will be available once the build process is complete.
-                      </p>
-                      {currentStep >= steps.length && previewURL && (
-                        <button
-                          onClick={() => window.open(previewURL, "_blank")}
-                          className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 rounded-md shadow-lg hover:shadow-purple-500/20 transition-all"
-                        >
-                          View Live Preview
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )
-              ) : (
-                // ✅ Code Preview Tab
-                <div className="bg-slate-800 rounded-lg border border-slate-700 h-full overflow-hidden">
-                  {selectedFile ? (
-                    <CodePreview fileId={selectedFile} files={files} />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-slate-400">
-                      <div className="text-center">
-                        <Code size={48} className="mx-auto mb-4 opacity-20" />
-                        <p>Select a file to view its content</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-          </div>
-
-          {/* File Explorer - Right Side */}
-          <div className="w-full lg:w-64 xl:w-72 bg-slate-900 border-l border-slate-800 p-4 overflow-y-auto">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
-              <Folder size={18} className="mr-2 text-purple-500" />
-              Files
-            </h2>
-
-            <div className="space-y-2">
-              {renderFileTree(files, expandedFolders, toggleFolder, handleFileSelect, selectedFile)}
-            </div>
-          </div>
-        </div>
-      </main>
-
-
-    </div>
-  );
-};
-
-// Helper function to render the file tree recursively
-const renderFileTree = (
-  items: any[],
-  expandedFolders: Record<string, boolean>,
-  toggleFolder: (id: string) => void,
-  handleFileSelect: (id: string) => void,
-  selectedFile: string | null,
-  level = 0
-) => {
-  return items.map(item => {
-    const isFolder = item.type === 'folder';
-    const isExpanded = expandedFolders[item.id];
-    const isSelected = selectedFile === item.id;
-
-    return (
-      <div key={item.id} style={{ marginLeft: `${level * 12}px` }}>
-        <div
-          className={`flex items-center py-1.5 px-2 rounded-md cursor-pointer ${isSelected ? 'bg-purple-500/20 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-            } transition-colors`}
-          onClick={() => isFolder ? toggleFolder(item.id) : handleFileSelect(item.id)}
-        >
-          {isFolder ? (
-            isExpanded ? (
-              <FolderOpen size={16} className="text-blue-400 mr-2 flex-shrink-0" />
-            ) : (
-              <Folder size={16} className="text-blue-400 mr-2 flex-shrink-0" />
-            )
-          ) : (
-            <File size={16} className="text-slate-400 mr-2 flex-shrink-0" />
-          )}
-
-          <span className="truncate">{item.name}</span>
-
-          {isFolder && (
-            <ChevronRight
-              size={16}
-              className={`ml-auto transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-            />
-          )}
-        </div>
-
-        {isFolder && isExpanded && item.children && (
-          <div className="mt-1 mb-2">
-            {renderFileTree(item.children, expandedFolders, toggleFolder, handleFileSelect, selectedFile, level + 1)}
-          </div>
-        )}
-      </div>
-    );
-  });
-};
-
-interface CodePreviewProps {
-  fileId: string;
-  files: any[];
+function Component() {
+  return <div>Hello World</div>;
 }
 
-const CodePreview: React.FC<CodePreviewProps> = ({ fileId, files }) => {
-  const findFile = (items: any[], id: string): any => {
-    for (const item of items) {
-      if (item.id === id) return item;
-      if (item.children) {
-        const found = findFile(item.children, id);
-        if (found) return found;
+export default Component;`;
+
+export function Builder() {
+  const location = useLocation();
+  const { prompt } = location.state as { prompt: string };
+  const [userPrompt, setPrompt] = useState("");
+  const [llmMessages, setLlmMessages] = useState<{ role: "user" | "assistant", content: string; }[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [templateSet, setTemplateSet] = useState(false);
+  const webcontainer = useWebContainer();
+
+  const [currentStep, setCurrentStep] = useState(1);
+  const [activeTab, setActiveTab] = useState<'code' | 'preview'>('code');
+  const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
+
+  const [steps, setSteps] = useState<Step[]>([]);
+
+  const [files, setFiles] = useState<FileItem[]>([]);
+
+  useEffect(() => {
+    let originalFiles = [...files];
+    let updateHappened = false;
+    steps.filter(({ status }) => status === "pending").map(step => {
+      updateHappened = true;
+      if (step?.type === StepType.CreateFile) {
+        let parsedPath = step.path?.split("/") ?? []; // ["src", "components", "App.tsx"]
+        let currentFileStructure = [...originalFiles]; // {}
+        let finalAnswerRef = currentFileStructure;
+
+        let currentFolder = ""
+        while (parsedPath.length) {
+          currentFolder = `${currentFolder}/${parsedPath[0]}`;
+          let currentFolderName = parsedPath[0];
+          parsedPath = parsedPath.slice(1);
+
+          if (!parsedPath.length) {
+            // final file
+            let file = currentFileStructure.find(x => x.path === currentFolder)
+            if (!file) {
+              currentFileStructure.push({
+                name: currentFolderName,
+                type: 'file',
+                path: currentFolder,
+                content: step.code
+              })
+            } else {
+              file.content = step.code;
+            }
+          } else {
+            /// in a folder
+            let folder = currentFileStructure.find(x => x.path === currentFolder)
+            if (!folder) {
+              // create the folder
+              currentFileStructure.push({
+                name: currentFolderName,
+                type: 'folder',
+                path: currentFolder,
+                children: []
+              })
+            }
+
+            currentFileStructure = currentFileStructure.find(x => x.path === currentFolder)!.children!;
+          }
+        }
+        originalFiles = finalAnswerRef;
       }
+
+    })
+
+    if (updateHappened) {
+
+      setFiles(originalFiles)
+      setSteps(steps => steps.map((s: Step) => {
+        return {
+          ...s,
+          status: "completed"
+        }
+
+      }))
     }
-    return null;
-  };
+    console.log(files);
+  }, [steps, files]);
 
-  const file = findFile(files, fileId);
+  useEffect(() => {
+    const createMountStructure = (files: FileItem[]): Record<string, any> => {
+      const mountStructure: Record<string, any> = {};
 
-  if (!file) {
-    return <div className="p-4 text-slate-400">File not found</div>;
+      const processFile = (file: FileItem, isRootFolder: boolean) => {
+        if (file.type === 'folder') {
+          // For folders, create a directory entry
+          mountStructure[file.name] = {
+            directory: file.children ?
+              Object.fromEntries(
+                file.children.map(child => [child.name, processFile(child, false)])
+              )
+              : {}
+          };
+        } else if (file.type === 'file') {
+          if (isRootFolder) {
+            mountStructure[file.name] = {
+              file: {
+                contents: file.content || ''
+              }
+            };
+          } else {
+            // For files, create a file entry with contents
+            return {
+              file: {
+                contents: file.content || ''
+              }
+            };
+          }
+        }
+
+        return mountStructure[file.name];
+      };
+
+      // Process each top-level file/folder
+      files.forEach(file => processFile(file, true));
+
+      return mountStructure;
+    };
+
+    const mountStructure = createMountStructure(files);
+
+    // Mount the structure if WebContainer is available
+    console.log(mountStructure);
+    webcontainer?.mount(mountStructure);
+  }, [files, webcontainer]);
+
+  async function init() {
+    const response = await axios.post(`${BACKEND_URL}/template`, {
+      prompt: prompt.trim()
+    });
+    setTemplateSet(true);
+
+    const { prompts, uiPrompts } = response.data;
+
+    setSteps(parseXml(uiPrompts[0]).map((x: Step) => ({
+      ...x,
+      status: "pending"
+    })));
+
+    setLoading(true);
+    const stepsResponse = await axios.post(`${BACKEND_URL}/chat`, {
+      messages: [...prompts, prompt].map(content => ({
+        role: "user",
+        content
+      }))
+    })
+
+    setLoading(false);
+    console.log("chat response : ", stepsResponse.data.response.receivedMessages[0].content[0].text);
+
+
+    setSteps(prevSteps => [
+      ...prevSteps,
+      ...parseXml(stepsResponse.data.response.receivedMessages[0].content[0].text)
+    ]);
+    
+    console.log("steps -- " ,steps);
+    
+    setLlmMessages([...prompts, prompt].map(content => ({
+      role: "user",
+      content
+    })));
+
+    setLlmMessages(x => [...x, { role: "assistant", content: stepsResponse.data.response }])
   }
 
-  if (!file.content) {
-    return <div className="p-4 text-slate-400">No content available for this file.</div>;
-  }
+  useEffect(() => {
+    init();
+  }, [])
 
   return (
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center">
-          <File size={16} className="text-slate-400 mr-2" />
-          <span className="text-slate-300 font-medium">{file.name}</span>
+    <div className="min-h-screen bg-gray-900 flex flex-col">
+      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+        <h1 className="text-xl font-semibold text-gray-100">Website Builder</h1>
+        <p className="text-sm text-gray-400 mt-1">Prompt: {prompt}</p>
+      </header>
+
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full grid grid-cols-4 gap-6 p-6">
+          <div className="col-span-1 space-y-6 overflow-auto">
+            <div>
+              <div className="max-h-[75vh] overflow-scroll">
+                <StepsList
+                  steps={steps}
+                  currentStep={currentStep}
+                  onStepClick={setCurrentStep}
+                />
+              </div>
+              <div>
+                <div className='flex'>
+                  <br />
+                  {(loading || !templateSet) && <Loader />}
+                  {!(loading || !templateSet) && <div className='flex'>
+                    <textarea value={userPrompt} onChange={(e) => {
+                      setPrompt(e.target.value)
+                    }} className='p-2 w-full'></textarea>
+                    <button onClick={async () => {
+                      const newMessage = {
+                        role: "user" as "user",
+                        content: userPrompt
+                      };
+
+                      setLoading(true);
+                      const stepsResponse = await axios.post(`${BACKEND_URL}/chat`, {
+                        messages: [...llmMessages, newMessage]
+                      });
+                      setLoading(false);
+
+                      setLlmMessages(x => [...x, newMessage]);
+                      setLlmMessages(x => [...x, {
+                        role: "assistant",
+                        content: stepsResponse.data.response
+                      }]);
+
+                      setSteps(s => [...s, ...parseXml(stepsResponse.data.response).map(x => ({
+                        ...x,
+                        status: "pending" as "pending"
+                      }))]);
+
+                    }} className='bg-purple-400 px-4'>Send</button>
+                  </div>}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="col-span-1">
+            <FileExplorer
+              files={files}
+              onFileSelect={setSelectedFile}
+            />
+          </div>
+          <div className="col-span-2 bg-gray-900 rounded-lg shadow-lg p-4 h-[calc(100vh-8rem)]">
+            <TabView activeTab={activeTab} onTabChange={setActiveTab} />
+            <div className="h-[calc(100%-4rem)]">
+              {activeTab === 'code' ? (
+                <CodeEditor file={selectedFile} />
+              ) : (
+                <PreviewFrame webContainer={webcontainer} files={files} />
+              )}
+            </div>
+          </div>
         </div>
-        <div className="flex items-center">
-          <button className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-slate-700 transition-colors">
-            <Settings size={14} />
-          </button>
-        </div>
-      </div>
-      <div className="bg-slate-900 rounded-md p-4 font-mono text-sm text-slate-300 overflow-x-auto whitespace-pre-wrap">
-        <pre>{file.content}</pre>
       </div>
     </div>
   );
-};
-
-
-export default Builder;
+}
