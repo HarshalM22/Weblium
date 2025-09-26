@@ -14,15 +14,22 @@
     "@anthropic-ai/sdk": "^0.63.1",
     "@google/generative-ai": "^0.24.1",
     "@huggingface/inference": "^3.13.2",
+    "@prisma/client": "^6.16.2",
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.10",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "openai": "^5.22.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@types/node": "^22.15.21"
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "^22.15.21",
+    "prisma": "^6.16.2"
   }
 }
