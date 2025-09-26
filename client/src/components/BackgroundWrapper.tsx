@@ -9,11 +9,15 @@ const BackgroundWrapper = ({ children }: Props) => (
   <div className="min-h-screen w-full bg-white relative">
     {/* Layer 1: The main color gradient (bottom layer) */}
     <div
-      className="absolute inset-0 z-0"
-      style={{
-        backgroundImage: `radial-gradient(125% 125% at 50% 90%, #080708 40%, #f1f0ea 100%)`,
-      }}
-    />
+  className="absolute inset-0 z-0"
+  style={{
+    // We layer two gradients. The first is the new "gloss" layer on top.
+    backgroundImage: `
+      radial-gradient(at 50% 0%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+      radial-gradient(125% 125% at 50% 90%, #000000 40%, #0077b6 100%)
+    `,
+  }}
+/>
     
     {/* Layer 2: The dotted pattern with a sharp, synchronized mask */}
     <div

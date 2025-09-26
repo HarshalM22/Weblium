@@ -1,3 +1,80 @@
+/* src/index.css */
+
+/*
+ * ==========================================================================
+ * 1. FONT DEFINITIONS (@font-face)
+ * ==========================================================================
+ * All font definitions go here, at the very top of the file.
+ * The paths are corrected to work from the `src/` directory.
+*/
+
+/**
+ * This is the variable font, which is what your Tailwind theme uses.
+*/
+@font-face {
+  font-family: 'Britney-Variable';
+  src: url('./fonts/Britney-Variable.woff2') format('woff2'),
+       url('./fonts/Britney-Variable.woff') format('woff'),
+       url('./fonts/Britney-Variable.ttf') format('truetype');
+  font-weight: 300 900;
+  font-display: swap;
+  font-style: normal;
+}
+
+/* Static font fallbacks */
+@font-face {
+  font-family: 'Britney-Light';
+  src: url('./fonts/Britney-Light.woff2') format('woff2'),
+       url('./fonts/Britney-Light.woff') format('woff'),
+       url('./fonts/Britney-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-display: swap;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Britney-Regular';
+  src: url('./fonts/Britney-Regular.woff2') format('woff2'),
+       url('./fonts/Britney-Regular.woff') format('woff'),
+       url('./fonts/Britney-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Britney-Bold';
+  src: url('./fonts/Britney-Bold.woff2') format('woff2'),
+       url('./fonts/Britney-Bold.woff') format('woff'),
+       url('./fonts/Britney-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+  font-style: normal;
+}
+
+
+/*
+ * ==========================================================================
+ * 2. TAILWIND DIRECTIVES
+ * ==========================================================================
+ * These must come after all @font-face rules.
+*/
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+/*
+ * ==========================================================================
+ * 3. TAILWIND THEME EXTENSIONS
+ * ==========================================================================
+ * Customizations using @theme.
+*/
+
+@theme {
+  /* This creates the `font-script` utility class */
+  fontFamily {
+    script: ['Britney-Variable', 'script' , 'cursive'];
+  }
+}
