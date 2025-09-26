@@ -1,4 +1,4 @@
-import  { useEffect, useState } from 'react';
+import  { useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { StepsList } from '../components/StepsList';
 import { FileExplorer } from '../components/FileExplorer';
@@ -11,6 +11,7 @@ import { BACKEND_URL } from '../config';
 import { parseXml } from '../steps';
 import { useWebContainer } from '../hooks/useWebContainer';
 import { Loader } from '../components/Loader';
+import PageContext from '../context/PageContext';
 
 // const MOCK_FILE_CONTENT = `// This is a sample file content
 // import React from 'react';
@@ -35,6 +36,8 @@ export function Builder() {
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
 
   const [steps, setSteps] = useState<Step[]>([]);
+  const { view, setView } = useContext(PageContext);
+  
 
   const [files, setFiles] = useState<FileItem[]>([]);
 
@@ -153,6 +156,13 @@ export function Builder() {
     const response = await axios.post(`${BACKEND_URL}/template`, {
       prompt: prompt.trim()
     });
+   console.log(response);
+   
+    if(response.status === 400){
+      setView('login') ;
+      return;
+    }
+    
     setTemplateSet(true);
 
     const { prompts, uiPrompts } = response.data;
@@ -169,6 +179,8 @@ export function Builder() {
         content
       }))
     })
+
+  
 
     setLoading(false);
     console.log("chat response : ", stepsResponse.data.response.receivedMessages[0].content[0].text);

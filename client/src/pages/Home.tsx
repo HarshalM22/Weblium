@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Wand2 } from 'lucide-react';
 import BackgroundWrapper from '../components/BackgroundWrapper';
 import { LoginPage } from './LoginPage';
 import { SignupPage } from './Signup';
+import PageContext from '../context/PageContext';
 
 export function Home() {
   const [prompt, setPrompt] = useState('');
   
-  // --- IMPROVEMENT ---
-  // Use a single state to control the view: 'home', 'login', or 'signup'
-  const [view, setView] = useState('home'); 
+  // CHANGE HERE: Get 'setView' instead of 'toggleView'
+  const { view, setView } = useContext(PageContext);
   
   const navigate = useNavigate();
 
@@ -25,21 +25,25 @@ export function Home() {
     <BackgroundWrapper>
       <div>
         <nav className='flex justify-between pt-4 px-8 '>
-          <div className='text-white font-script font-bold text-2xl '> Weblium</div>
+          <div 
+            className='text-white font-script font-bold text-2xl cursor-pointer' 
+            // Add a way to get back home
+            onClick={() => setView('home')}
+          >
+            Weblium
+          </div>
 
           <div className='flex gap-7 px-4 text-white font-bold'>
-            {/* These buttons now change the 'view' state */}
-            <button className='px-4' onClick={() => setView('login')}> Login</button>
-            <button className='px-4' onClick={() => setView('signup')}> Get Started</button>
+            {/* CHANGE HERE: Each button now sets a specific view */}
+            <button className='px-4' onClick={() => setView('login')}>Login</button>
+            <button className='px-4' onClick={() => setView('signup')}>Get Started</button>
           </div>
         </nav>
 
         <div className="min-h-screen flex items-center justify-center p-4">
 
-          {/* --- COMPLETION & IMPROVEMENT --- */}
-          {/* We now render content based on the 'view' state */}
-
           {/* 1. Show Login Page */}
+          {/* Pass setView so the LoginPage can switch to Signup or back to Home */}
           {view === 'login' && <LoginPage setView={setView} />}
 
           {/* 2. Show Signup Page */}

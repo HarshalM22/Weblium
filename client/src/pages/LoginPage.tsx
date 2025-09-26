@@ -1,15 +1,24 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { X } from 'lucide-react'; // For the close icon
+import axios from 'axios';
+import { BACKEND_URL } from '../config';
 
 export function LoginPage({ setView }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    // In a real app, you would handle authentication here
-    console.log('Logging in with:', { email, password });
-    alert('Login form submitted! Check the console for details.');
+    const loginResponse = await axios.post(`${BACKEND_URL}/api/v1/login`,{
+      email,
+      password
+    })
+
+    if(loginResponse.status ===200){
+      const token = loginResponse.data.token ;
+      localStorage.setItem('token', token) ;
+      setView('home');
+    }
   };
 
   return (

@@ -1,20 +1,28 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { X } from 'lucide-react'; // For the close icon
+import { BACKEND_URL } from '../config';
+import axios from 'axios';
 
 export function SignupPage({ setView }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    // In a real app, you would handle user registration here
-    console.log('Signing up with:', { username, email, password });
-    alert('Signup form submitted! Check the console for details.');
+
+    const signResponse =await axios.post(`${BACKEND_URL}/api/v1/signup`,{
+      username,
+      email,
+      password
+    })
+    if(signResponse.status === 200){
+      setView('login') ;
+    }
+    
   };
 
   return (
-    // Full-screen overlay to dim the background
     <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50">
       
       {/* The Signup Form Card */}
@@ -106,7 +114,7 @@ export function SignupPage({ setView }) {
             onClick={() => setView('login')}
             className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer"
           >
-            Sign In
+            Log In
           </span>
         </p>
       </div>
