@@ -25,10 +25,8 @@ export function SignupPage({ setView }) {
   return (
     <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50">
       
-      {/* The Signup Form Card */}
       <div className="bg-white w-full max-w-md p-8 rounded-xl shadow-2xl relative">
         
-        {/* Close Button */}
         <button 
           onClick={() => setView('home')} 
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition"
@@ -36,15 +34,12 @@ export function SignupPage({ setView }) {
           <X size={24} />
         </button>
 
-        {/* Header */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900">Create an Account</h2>
           <p className="text-gray-500 mt-2">Start your journey with us today.</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Username Input */}
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
               Username
@@ -61,7 +56,6 @@ export function SignupPage({ setView }) {
             />
           </div>
 
-          {/* Email Input */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               Email Address
@@ -79,7 +73,6 @@ export function SignupPage({ setView }) {
             />
           </div>
 
-          {/* Password Input */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Password
@@ -96,7 +89,6 @@ export function SignupPage({ setView }) {
             />
           </div>
 
-          {/* Submit Button */}
           <div>
             <button
               type="submit"
@@ -107,7 +99,6 @@ export function SignupPage({ setView }) {
           </div>
         </form>
 
-        {/* Switch to Sign In */}
         <p className="text-center text-sm text-gray-500 mt-8">
           Already have an account?{' '}
           <span

@@ -22,13 +22,10 @@ export function LoginPage({ setView }) {
   };
 
   return (
-    // Full-screen overlay to dim the background
     <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50">
       
-      {/* The Login Form Card */}
       <div className="bg-white w-full max-w-md p-8 rounded-xl shadow-2xl relative">
         
-        {/* Close Button */}
         <button 
           onClick={() => setView('home')} 
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition"
@@ -36,15 +33,12 @@ export function LoginPage({ setView }) {
           <X size={24} />
         </button>
 
-        {/* Header */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
           <p className="text-gray-500 mt-2">Please enter your details to sign in.</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email Input */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               Email Address
@@ -62,7 +56,6 @@ export function LoginPage({ setView }) {
             />
           </div>
 
-          {/* Password Input */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Password
@@ -80,7 +73,6 @@ export function LoginPage({ setView }) {
             />
           </div>
 
-          {/* Submit Button */}
           <div>
             <button
               type="submit"
@@ -91,7 +83,6 @@ export function LoginPage({ setView }) {
           </div>
         </form>
 
-        {/* Switch to Sign Up */}
         <p className="text-center text-sm text-gray-500 mt-8">
           Don't have an account?{' '}
           <span

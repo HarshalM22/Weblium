@@ -13,14 +13,7 @@ import { useWebContainer } from '../hooks/useWebContainer';
 import { Loader } from '../components/Loader';
 import PageContext from '../context/PageContext';
 
-// const MOCK_FILE_CONTENT = `// This is a sample file content
-// import React from 'react';
 
-// function Component() {
-//   return <div>Hello World</div>;
-// }
-
-// export default Component;`;
 
 export function Builder() {
   const location = useLocation();

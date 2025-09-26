@@ -9,7 +9,6 @@ import PageContext from '../context/PageContext';
 export function Home() {
   const [prompt, setPrompt] = useState('');
   
-  // CHANGE HERE: Get 'setView' instead of 'toggleView'
   const { view, setView } = useContext(PageContext);
   
   const navigate = useNavigate();
@@ -27,14 +26,12 @@ export function Home() {
         <nav className='flex justify-between pt-4 px-8 '>
           <div 
             className='text-white font-script font-bold text-2xl cursor-pointer' 
-            // Add a way to get back home
             onClick={() => setView('home')}
           >
             Weblium
           </div>
 
           <div className='flex gap-7 px-4 text-white font-bold'>
-            {/* CHANGE HERE: Each button now sets a specific view */}
             <button className='px-4' onClick={() => setView('login')}>Login</button>
             <button className='px-4' onClick={() => setView('signup')}>Get Started</button>
           </div>
@@ -42,14 +39,10 @@ export function Home() {
 
         <div className="min-h-screen flex items-center justify-center p-4">
 
-          {/* 1. Show Login Page */}
-          {/* Pass setView so the LoginPage can switch to Signup or back to Home */}
           {view === 'login' && <LoginPage setView={setView} />}
 
-          {/* 2. Show Signup Page */}
           {view === 'signup' && <SignupPage setView={setView} />}
 
-          {/* 3. Show Homepage Content */}
           {view === 'home' && (
             <div className="max-w-2xl w-full">
               <div className="text-center mb-8">
