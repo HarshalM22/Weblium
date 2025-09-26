@@ -1,112 +1,97 @@
 require("dotenv").config();
 import express from "express";
+import Anthropic from "@anthropic-ai/sdk";
+import { BASE_PROMPT, getSystemPrompt } from "./prompts";
+import { basePrompt as nodeBasePrompt } from "./defaults/node";
+import { basePrompt as reactBasePrompt } from "./defaults/react";
 import cors from "cors";
-import OpenAI from "openai";
-import { BASE_PROMPT, getSystemPrompt, SystemPrompt } from "./prompt/prompt";
-import { reactBasePrompt } from "./defaults/react";
-import { nodeBasePrompt } from "./defaults/node";
 
-if (!process.env.OPENAI_API_KEY) {
-  console.error("OPENAI_API_KEY not found in environment variables.");
-  process.exit(1);
-}
-
-// Initialize OpenAI client
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
+const anthropic = new Anthropic();
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-/**
- * Decide whether project is "node" or "react"
- */
+// --------------------- TEMPLATE ENDPOINT ---------------------
 app.post("/template", async (req, res) => {
   try {
     const prompt = req.body.prompt;
 
-    const response = await client.chat.completions.create({
-      model: "gpt-4o-mini", // You can also use "gpt-4.1-mini" or "gpt-4o"
-      messages: [
-        {
-          role: "system",
-          content:
-            "Return either node or react based on what you think this project should be. Only return a single word either 'node' or 'react'. Do not return anything else.",
-        },
-        { role: "user", content: prompt },
-      ],
-      max_tokens: 1,
-      temperature: 0,
+    const response = await anthropic.messages.create({
+      messages: [{ role: "user", content: prompt }],
+      model: "claude-3-haiku-20240307",
+      max_tokens: 200,
+      system:
+        "Return either node or react based on what you think this project should be. Only return a single word: 'node' or 'react'. Do not return anything extra.",
     });
 
-    const answer = response.choices[0].message?.content?.trim().toLowerCase();
-    console.log("Template answer:", answer);
+    const answerBlock = response.content[0];
+    const answer =
+      answerBlock.type === "text" ? answerBlock.text.trim().toLowerCase() : "";
 
     if (answer === "react") {
       res.json({
-        basePrompt: [
+        prompts: [
           BASE_PROMPT,
-          ` Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${reactBasePrompt}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n - package-lock.json\n`,
+          `Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${reactBasePrompt}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n  - package-lock.json\n`,
         ],
-        uiPrompt: [reactBasePrompt],
+        uiPrompts: [reactBasePrompt],
       });
       return;
     }
 
     if (answer === "node") {
       res.json({
-        basePrompt: [
-          ` Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${nodeBasePrompt}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n - package-lock.json\n `,
+        prompts: [
+          BASE_PROMPT,
+          `Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${nodeBasePrompt}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n  - package-lock.json\n`,
         ],
-        uiPrompt: [nodeBasePrompt],
+        uiPrompts: [nodeBasePrompt],
       });
       return;
     }
 
-    res.status(403).json({ message: "You can’t access this" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Template endpoint failed" });
+    res.status(400).json({ message: "Invalid model response", raw: answer });
+  } catch (err) {
+    console.error("Error in /template:", err);
+    res.status(500).json({ error: "Template selection failed" });
   }
 });
 
-/**
- * Chat completion endpoint
- */
+// --------------------- CHAT ENDPOINT ---------------------
 app.post("/chat", async (req, res) => {
   try {
     const messages = req.body.messages;
-    console.log("Received messages: " , messages);
-    console.log("**************************************************************************************")
-   
 
-
-    // Collect streamed response into full text
-    const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [ {role: "system", content: SystemPrompt()} , ...messages],
-      max_tokens: 12000,
-      stream: true,
+    // Start streaming response
+    const stream = await anthropic.messages.stream({
+      messages,
+      model: "claude-3-haiku-20240307",
+      max_tokens: 4096,
+      system: getSystemPrompt(),
     });
 
-    let responseText = "";
-    for await (const chunk of response) {
-      const delta = chunk.choices[0]?.delta?.content || "";
-      if (delta) {
-        process.stdout.write(delta);
-        responseText += delta;
-      }
-    }
+    // Log each chunk as it's received
+    stream.on("text", (text: string) => {
+      process.stdout.write(text); // no newline, logs as a continuous stream
+    });
 
-    res.json({ response: responseText });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Chat endpoint failed" });
+    stream.on("end", () => {
+      console.log("\n--- Stream Ended ---");
+      res.json({ message: "Stream finished, check server console for output." ,
+        response : stream 
+       });
+    });
+
+    stream.on("error", (err: any) => {
+      console.error("Streaming error:", err);
+      res.status(500).json({ error: "Streaming failed." });
+    });
+
+  } catch (err) {
+    console.error("Error in /chat:", err);
+    res.status(500).json({ error: "Chat completion failed" });
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
-});
+
+app.listen(3000, () => console.log("Server running on port 3000"));
