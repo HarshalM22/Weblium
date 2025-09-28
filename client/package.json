@@ -12,8 +12,11 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@types/cors": "^2.8.18",
+    "@types/file-saver": "^2.0.7",
     "@webcontainer/api": "^1.6.1",
     "axios": "^1.9.0",
+    "file-saver": "^2.0.5",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
