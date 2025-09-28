@@ -5,6 +5,7 @@ import BackgroundWrapper from '../components/BackgroundWrapper';
 import { LoginPage } from './LoginPage';
 import { SignupPage } from './Signup';
 import PageContext from '../context/PageContext';
+import { useAuth } from '../context/AuthContext';
 
 export function Home() {
   const [prompt, setPrompt] = useState('');
@@ -13,12 +14,18 @@ export function Home() {
   
   const navigate = useNavigate();
 
+  const { isAuthenticated } = useAuth();
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (prompt.trim()) {
+     if (prompt.trim() && (isAuthenticated || localStorage.getItem('token'))) {
       navigate('/builder', { state: { prompt } });
-    }
+    }else{
+      alert("please Login to continue");
+      setView('login');
   };
+}
 
   return (
     <BackgroundWrapper>

@@ -1,4 +1,4 @@
-import  { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { StepsList } from '../components/StepsList';
 import { FileExplorer } from '../components/FileExplorer';
@@ -12,6 +12,13 @@ import { parseXml } from '../steps';
 import { useWebContainer } from '../hooks/useWebContainer';
 import { Loader } from '../components/Loader';
 import PageContext from '../context/PageContext';
+import { useAuth } from '../context/AuthContext';
+
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+import { DownloadIcon } from 'lucide-react';
+import { downloadProject } from '../components/Download';
+
 
 
 
@@ -30,9 +37,35 @@ export function Builder() {
 
   const [steps, setSteps] = useState<Step[]>([]);
   const { view, setView } = useContext(PageContext);
-  
+
 
   const [files, setFiles] = useState<FileItem[]>([]);
+
+
+  // async function downloadProject(files: FileItem[]) {
+  //   const zip = new JSZip();
+
+  //   function addToZip(file: FileItem, folder: JSZip) {
+  //     if (file.type === "file") {
+  //       folder.file(file.name, file.content || "");
+  //     } else if (file.type === "folder" && file.children) {
+  //       const subFolder = folder.folder(file.name)!;
+  //       file.children.forEach((child) => addToZip(child, subFolder));
+  //     }
+  //   }
+
+  //   files.forEach((file) => addToZip(file, zip));
+
+  //   const blob = await zip.generateAsync({ type: "blob" });
+  //   saveAs(blob, "website-project.zip");
+  // }
+
+
+
+  const { authToken, isAuthenticated } = useAuth();
+  if (!isAuthenticated) {
+    setView('home');
+  }
 
   useEffect(() => {
     let originalFiles = [...files];
@@ -148,14 +181,18 @@ export function Builder() {
   async function init() {
     const response = await axios.post(`${BACKEND_URL}/template`, {
       prompt: prompt.trim()
+    }, {
+      headers: {
+        token: localStorage.getItem('token') || authToken
+      }
     });
-   console.log(response);
-   
-    if(response.status === 400){
-      setView('login') ;
+    console.log(response);
+
+    if (response.status === 400) {
+      setView('login');
       return;
     }
-    
+
     setTemplateSet(true);
 
     const { prompts, uiPrompts } = response.data;
@@ -171,9 +208,13 @@ export function Builder() {
         role: "user",
         content
       }))
+    }, {
+      headers: {
+        token: localStorage.getItem('token') || authToken
+      }
     })
 
-  
+
 
     setLoading(false);
     console.log("chat response : ", stepsResponse.data.response.receivedMessages[0].content[0].text);
@@ -183,9 +224,9 @@ export function Builder() {
       ...prevSteps,
       ...parseXml(stepsResponse.data.response.receivedMessages[0].content[0].text)
     ]);
-    
-    console.log("steps -- " ,steps);
-    
+
+    console.log("steps -- ", steps);
+
     setLlmMessages([...prompts, prompt].map(content => ({
       role: "user",
       content
@@ -260,15 +301,25 @@ export function Builder() {
             />
           </div>
           <div className="col-span-2 bg-gray-900 rounded-lg shadow-lg p-4 h-[calc(100vh-8rem)]">
-            <TabView activeTab={activeTab} onTabChange={setActiveTab} />
+            <div className="flex items-center justify-between mb-4">
+              <TabView activeTab={activeTab} onTabChange={setActiveTab} />
+              <button
+                onClick={() => downloadProject(files)}
+                className="bg-gray-600 hover:bg-green-500 hover:text-black text-white px-3 py-1.5 rounded-lg text-sm shadow"
+              >
+                <DownloadIcon size={16}/>
+              </button>
+            </div>
+
             <div className="h-[calc(100%-4rem)]">
-              {activeTab === 'code' ? (
+              {activeTab === "code" ? (
                 <CodeEditor file={selectedFile} />
               ) : (
                 <PreviewFrame webContainer={webcontainer} files={files} />
               )}
             </div>
           </div>
+
         </div>
       </div>
     </div>

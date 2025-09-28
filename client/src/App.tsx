@@ -3,9 +3,11 @@ import { Home } from './pages/Home';
 
 import { Builder } from './pages/Builder';
 import { PageProvider } from './context/PageProvider';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
+    <AuthProvider>
     <PageProvider>
       <BrowserRouter>
         <Routes>
@@ -14,6 +16,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </PageProvider>
+    </AuthProvider>
   );
 }
 
