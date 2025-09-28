@@ -82,8 +82,8 @@ app.post("/chat",auth, async (req, res) => {
 
     const stream = await anthropic.messages.stream({
       messages,
-      model: "claude-3-7-sonnet-20250219",
-      max_tokens: 5000,
+      model: "claude-3-haiku-20240307", //claude-3-7-sonnet-20250219
+      max_tokens: 4096,
       system: getSystemPrompt(),
     });
 
@@ -96,11 +96,11 @@ app.post("/chat",auth, async (req, res) => {
       res.json({ message: "Stream finished, check server console for output." ,
         response : stream 
        });
+       return;
     });
 
     stream.on("error", (err: any) => {
       console.error("Streaming error:", err);
-      res.status(500).json({ error: "Streaming failed." });
     });
 
   } catch (err) {

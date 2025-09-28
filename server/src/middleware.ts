@@ -7,9 +7,9 @@ import { Request, Response, NextFunction } from "express";
 
 
 export function auth(req : Request, res:Response, next:NextFunction) {
-  const {token} = req.headers;
+  const token = req.headers.Token || req.headers.token ;
 
-  if(!token){
+  if(token== undefined|| null){
     res.status(400).json({
       message : "plz login no token"
     })
